@@ -5,8 +5,42 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:PrcpConfigUtility"
         mc:Ignorable="d"
-        Title="MainWindow" Height="450" Width="800">
+        Title="PRCP Config Manager" Height="800" Width="1200" MinHeight="600" MinWidth="800">
     <Grid>
 
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="200"/>
+            <ColumnDefinition Width="250"/>
+            <ColumnDefinition/>
+        </Grid.ColumnDefinitions>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="20"/>
+            <RowDefinition/>
+            <RowDefinition Height="50"/>
+        </Grid.RowDefinitions>
+        <!--Fixure Tree-->
+        <Grid Grid.Row="1" Grid.Column="0">
+            <GroupBox Header="Fixtures">
+                <TreeView x:Name="FixtureTreeView">
+                
+                </TreeView>
+            </GroupBox>
+        </Grid>
+        <!--Config editing area-->
+        <GroupBox Grid.Row="1" Grid.Column="1" Grid.ColumnSpan="2" Header="Config">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="250"/>
+                    <ColumnDefinition/>
+                </Grid.ColumnDefinitions>
+                <TreeView x:Name="ConfigTreeView" Margin="0,0,10,0" SelectedItemChanged="ConfigTreeView_SelectedItemChanged" >
+                </TreeView>
+                <DataGrid x:Name="ConfigDataGrid" Grid.Column="1" AutoGenerateColumns="False" HeadersVisibility="None">
+                    <DataGrid.Columns>
+                        <DataGridTextColumn Header="" Width="*" Binding="{Binding Path=., Mode=TwoWay}"/>
+                    </DataGrid.Columns>
+                </DataGrid>
+            </Grid>
+        </GroupBox>
     </Grid>
 </Window>
