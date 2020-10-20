@@ -17,6 +17,7 @@ using System.Xml;
 using System.Xml.Linq;
 using System.Printing;
 using System.IO;
+using System.Text.RegularExpressions;
 
 namespace PrcpConfigUtility
 {
@@ -34,6 +35,7 @@ namespace PrcpConfigUtility
             XDocument document = XDocument.Load("916-0401-MGSSS2R6.xml");
             DisplayXml(document);
             XDocument document1 = GetXml();
+            PopulateFixtureTree();
         }
 
         private void DisplayXml(XDocument document)
@@ -50,14 +52,56 @@ namespace PrcpConfigUtility
         }
         private void PopulateFixtureTree()
         {
-            foreach(string fixture in Directory.GetFiles(config.PcuFixturesFolder))
+            foreach(string fixtureConfig in Directory.GetFiles(config.PcuFixturesFolder))
             {
-                TreeViewItem fixtureHeader = new TreeViewItem //First level TreeViewItem
+                PcuFixture fixture = new PcuFixture(fixtureConfig);
+                FixtureTreeViewItem fixtureHeader = new FixtureTreeViewItem //First level TreeViewItem
                 {
-                    Header = System.IO.Path.GetFileNameWithoutExtension(fixture),
-                    Name = fixture
+                    Header = fixture.FixtureName,
+                    Path = fixture.FixtureConfigsLocation
                 };
-                // TODO: Create PcuFixture class, load fixture configs into class.
+                if(fixture.SubFolders)
+                {
+                    foreach(string subFolder in Directory.GetDirectories(fixture.FixtureConfigsLocation))
+                    {
+                        FixtureTreeViewItem subFolderHeader = new FixtureTreeViewItem //Second level TreeViewItem
+                        {
+                            Header = System.IO.Path.GetFileName(subFolder),
+                            Path = subFolder
+                        };
+                        foreach(string file in Directory.GetFiles(subFolder))
+                        {
+                            string fileName = System.IO.Path.GetFileName(file);
+                            if (Regex.IsMatch(fileName,fixture.ConfigRegex))
+                            {
+                                FixtureTreeViewItem fileItem = new FixtureTreeViewItem //Third level TreeViewItem
+                                {
+                                    Header = fileName,
+                                    Path = file
+                                };
+                                subFolderHeader.Items.Add(fileItem);
+                            }
+                        }
+                        fixtureHeader.Items.Add(subFolderHeader);
+                    }
+                }
+                else
+                {
+                    foreach (string file in Directory.GetFiles(fixture.FixtureConfigsLocation))
+                    {
+                        string fileName = System.IO.Path.GetFileName(file);
+                        if (Regex.IsMatch(file, fixture.ConfigRegex))
+                        {
+                            FixtureTreeViewItem fileItem = new FixtureTreeViewItem //Third level TreeViewItem
+                            {
+                                Header = fileName,
+                                Path = file
+                            };
+                            fixtureHeader.Items.Add(fileItem);
+                        }
+                    }
+                }
+                FixtureTreeView.Items.Add(fixtureHeader);
             }
         }
     }
