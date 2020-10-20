@@ -29,17 +29,9 @@
         <!--Config editing area-->
         <GroupBox Grid.Row="1" Grid.Column="1" Grid.ColumnSpan="2" Header="Config">
             <Grid>
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="250"/>
-                    <ColumnDefinition/>
-                </Grid.ColumnDefinitions>
-                <TreeView x:Name="ConfigTreeView" Margin="0,0,10,0" SelectedItemChanged="ConfigTreeView_SelectedItemChanged" >
-                </TreeView>
-                <DataGrid x:Name="ConfigDataGrid" Grid.Column="1" AutoGenerateColumns="False" HeadersVisibility="None">
-                    <DataGrid.Columns>
-                        <DataGridTextColumn Header="" Width="*" Binding="{Binding Path=., Mode=TwoWay}"/>
-                    </DataGrid.Columns>
-                </DataGrid>
+                <TextBox x:Name="ConfigEditorTextBox" Margin="10,10,10,10">
+                    
+                </TextBox>
             </Grid>
         </GroupBox>
     </Grid>
