@@ -16,8 +16,8 @@ using System.Windows.Shapes;
 using System.Xml;
 using System.Xml.Linq;
 using System.Printing;
-using System.IO;
 using System.Text.RegularExpressions;
+using System.IO;
 
 namespace PrcpConfigUtility
 {
@@ -30,78 +30,67 @@ namespace PrcpConfigUtility
         public MainWindow()
         {
             InitializeComponent();
-            List<string> someStrings = new List<string>() { "Test string" };
-            //ConfigDataGrid.ItemsSource = someStrings;
-            XDocument document = XDocument.Load("916-0401-MGSSS2R6.xml");
-            DisplayXml(document);
-            XDocument document1 = GetXml();
             PopulateFixtureTree();
         }
 
-        private void DisplayXml(XDocument document)
+        private void FixtureTreeView_MouseDoubleClick(object sender, MouseButtonEventArgs e) //Open selected xml in the editor
         {
-            ConfigEditorTextBox.Text = document.ToString();
-        }
-        /// <summary>
-        /// Gets the text from the ConfigEditorTextBox in the main window, and parses to a new XDocument
-        /// </summary>
-        /// <returns>XDocument</returns>
-        private XDocument GetXml()
-        {
-            return XDocument.Parse(ConfigEditorTextBox.Text);
-        }
-        private void PopulateFixtureTree()
-        {
-            foreach(string fixtureConfig in Directory.GetFiles(config.PcuFixturesFolder))
+            if(currentDocumentChangesMade & currentDocument !="")
             {
-                PcuFixture fixture = new PcuFixture(fixtureConfig);
-                FixtureTreeViewItem fixtureHeader = new FixtureTreeViewItem //First level TreeViewItem
+                switch (MessageBox.Show("Do you wish to save changes to the current document?", "Unsaved Changes", MessageBoxButton.YesNoCancel, MessageBoxImage.Information))
                 {
-                    Header = fixture.FixtureName,
-                    Path = fixture.FixtureConfigsLocation
-                };
-                if(fixture.SubFolders)
-                {
-                    foreach(string subFolder in Directory.GetDirectories(fixture.FixtureConfigsLocation))
-                    {
-                        FixtureTreeViewItem subFolderHeader = new FixtureTreeViewItem //Second level TreeViewItem
+                    case MessageBoxResult.Yes:
                         {
-                            Header = System.IO.Path.GetFileName(subFolder),
-                            Path = subFolder
-                        };
-                        foreach(string file in Directory.GetFiles(subFolder))
-                        {
-                            string fileName = System.IO.Path.GetFileName(file);
-                            if (Regex.IsMatch(fileName,fixture.ConfigRegex))
-                            {
-                                FixtureTreeViewItem fileItem = new FixtureTreeViewItem //Third level TreeViewItem
-                                {
-                                    Header = fileName,
-                                    Path = file
-                                };
-                                subFolderHeader.Items.Add(fileItem);
-                            }
+                            SaveEditorText();
+                            break;
                         }
-                        fixtureHeader.Items.Add(subFolderHeader);
-                    }
+                    case MessageBoxResult.No:
+                        break;
+                    case MessageBoxResult.Cancel:
+                        return;
                 }
-                else
+            }
+            if(FixtureTreeIsFileSelected())
+            {
+                string selectedPath = FixtureTreeItemPath();
+                if (GetFileType(selectedPath) == "xml")
                 {
-                    foreach (string file in Directory.GetFiles(fixture.FixtureConfigsLocation))
-                    {
-                        string fileName = System.IO.Path.GetFileName(file);
-                        if (Regex.IsMatch(file, fixture.ConfigRegex))
-                        {
-                            FixtureTreeViewItem fileItem = new FixtureTreeViewItem //Third level TreeViewItem
-                            {
-                                Header = fileName,
-                                Path = file
-                            };
-                            fixtureHeader.Items.Add(fileItem);
-                        }
-                    }
+                    DisplayXml(XDocument.Load(selectedPath));
+                    SetCurrentDocument(selectedPath);
                 }
-                FixtureTreeView.Items.Add(fixtureHeader);
+            }
+        }
+
+        private void EditorSaveButton_Click(object sender, RoutedEventArgs e)
+        {
+            SaveEditorText();
+        }
+
+        private void ConfigEditorTextBox_TextChanged(object sender, TextChangedEventArgs e)
+        {
+            currentDocumentChangesMade = true;
+        }
+
+        private void FixtureTreeOpenFolder_Click(object sender, RoutedEventArgs e)
+        {
+            string folder = FixtureTreeItemFolder();
+            if (folder != "") { Process.Start("explorer", folder); }
+        }
+
+        private void FixtureTreeArchiveFile_Click(object sender, RoutedEventArgs e)
+        {
+            ArchiveCurrentItem();
+        }
+
+        private void FixtureTreeContextMenu_Opened(object sender, RoutedEventArgs e)
+        {
+            if(FixtureTreeIsFileSelected())
+            {
+                FixtureTreeArchiveFile.IsEnabled = true;
+            }
+            else
+            {
+                FixtureTreeArchiveFile.IsEnabled = false;
             }
         }
     }

@@ -11,6 +11,7 @@ namespace PrcpConfigUtility
 {
     public class PcuConfig
     {
+        //All regex matches result in full match
         private readonly string configName = "PCUConfig.xml";
         public string PcuFixturesFolder { get; private set; }
         public List<string> Fixtures { get; private set; } = new List<string>();

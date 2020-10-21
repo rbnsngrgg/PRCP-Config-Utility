@@ -6,10 +6,14 @@
         xmlns:local="clr-namespace:PrcpConfigUtility"
         mc:Ignorable="d"
         Title="PRCP Config Manager" Height="800" Width="1200" MinHeight="600" MinWidth="800">
+    <Window.Resources>
+        <Style TargetType="Image">
+            <Setter Property="RenderOptions.BitmapScalingMode" Value="HighQuality"/>
+        </Style>
+    </Window.Resources>
     <Grid>
-
         <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="200"/>
+            <ColumnDefinition Width="250"/>
             <ColumnDefinition Width="250"/>
             <ColumnDefinition/>
         </Grid.ColumnDefinitions>
@@ -21,17 +25,31 @@
         <!--Fixure Tree-->
         <Grid Grid.Row="1" Grid.Column="0">
             <GroupBox Header="Fixtures">
-                <TreeView x:Name="FixtureTreeView">
-                
+                <TreeView x:Name="FixtureTreeView" MouseDoubleClick="FixtureTreeView_MouseDoubleClick">
+                    <TreeView.ContextMenu>
+                        <ContextMenu x:Name="FixtureTreeContextMenu" Opened="FixtureTreeContextMenu_Opened">
+                            <MenuItem x:Name="FixtureTreeOpenFolder" Header="Open Folder" Click="FixtureTreeOpenFolder_Click"/>
+                            <MenuItem x:Name="FixtureTreeArchiveFile" Header="Archive File" Click="FixtureTreeArchiveFile_Click"/>
+                        </ContextMenu>
+                    </TreeView.ContextMenu>
                 </TreeView>
             </GroupBox>
         </Grid>
         <!--Config editing area-->
         <GroupBox Grid.Row="1" Grid.Column="1" Grid.ColumnSpan="2" Header="Config">
             <Grid>
-                <TextBox x:Name="ConfigEditorTextBox" Margin="10,10,10,10">
-                    
-                </TextBox>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="30"/>
+                    <RowDefinition/>
+                    <RowDefinition Height="40"/>
+                </Grid.RowDefinitions>
+                <TextBox x:Name="CurrentFileTextBox" Grid.Row="0" Height="25" IsReadOnly="True" Margin="10,0,10,0"/>
+                <TextBox x:Name="ConfigEditorTextBox" Grid.Row="1" Margin="10,10,10,0" HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Auto"
+                         AcceptsReturn="True" TextChanged="ConfigEditorTextBox_TextChanged"/>
+                <Button x:Name="EditorSaveButton" Grid.Row="2" Height="30" Width="30" 
+                        HorizontalAlignment="Right" VerticalAlignment="Center" Margin="0,0,10,0" Click="EditorSaveButton_Click">
+                    <Image Source="Images/save.png"/>
+                </Button>
             </Grid>
         </GroupBox>
     </Grid>
