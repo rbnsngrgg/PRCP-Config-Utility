@@ -7,6 +7,8 @@ using System.Xml.Linq;
 using System.IO;
 using System.Linq;
 using System.Diagnostics;
+using System.Windows.Media;
+using System.Windows.Controls;
 
 namespace PrcpConfigUtility
 {
@@ -16,7 +18,7 @@ namespace PrcpConfigUtility
     public partial class MainWindow : Window
     {
         private string currentDocument = ""; //For keeping track of which document is displayed in the editor.
-
+        private XDocument currentXDocument;
         private bool currentDocumentChangesMade = false;
 
 
@@ -27,7 +29,6 @@ namespace PrcpConfigUtility
             if (!Directory.Exists(archiveFolder))
             { Directory.CreateDirectory(archiveFolder); }
             string newPath = Path.Combine(archiveFolder, Path.GetFileName(currentItemPath));
-            Debug.WriteLine($"Moving from: {currentItemPath}\nTo: {newPath}");
             File.Move(currentItemPath, newPath, true);
             PopulateFixtureTree();
         }
@@ -63,14 +64,11 @@ namespace PrcpConfigUtility
             if(FixtureTreeView.SelectedItem != null)
             {
                 FixtureTreeViewItem fixtureItem = FixtureTreeView.SelectedItem as FixtureTreeViewItem;
-                if (File.Exists(fixtureItem.Path))
-                {
-                    return Directory.GetParent(fixtureItem.Path).FullName;
-                }
-                else if(Directory.Exists(fixtureItem.Path))
+                if(Directory.Exists(fixtureItem.Path))
                 {
                     return fixtureItem.Path;
                 }
+                return Directory.GetParent(fixtureItem.Path).FullName;
             }
             return "";
         }
@@ -78,6 +76,35 @@ namespace PrcpConfigUtility
         private FixtureTreeViewItem FixtureTreeSelectedItem()
         {
             return FixtureTreeView.SelectedItem as FixtureTreeViewItem;
+        }
+
+        private void ForEachTreeItemVoid(Func<FixtureTreeViewItem,bool> method) //Iterate through each FixtureTreeViewItem, run method on each
+        {
+            foreach(FixtureTreeViewItem level1Item in FixtureTreeView.Items)
+            {
+                foreach(FixtureTreeViewItem level2Item in level1Item.Items)
+                {
+                    if(level2Item.Items.Count > 0)
+                    {
+                        foreach(FixtureTreeViewItem level3Item in level2Item.Items)
+                        {
+                            if (method(level3Item)) { return; } ;
+                        }
+                    }
+                    else
+                    {
+                        if (method(level2Item)) { return; } ;
+                    }
+                }
+            }
+        }
+        private void WriteLineIfMatch(FixtureTreeViewItem item)
+        {
+            FixtureTreeViewItem currentItem = FixtureTreeSelectedItem();
+            if(currentItem.GetGroupMatchString() == item.GetGroupMatchString())
+            {
+                Debug.WriteLine($"{item.Path}\nMATCHES\n{currentItem.Path}");
+            }
         }
 
         private string GetFileType(string file) //Return lowercase file type. Blank if folder
@@ -157,13 +184,91 @@ namespace PrcpConfigUtility
         /// Gets the text from the ConfigEditorTextBox in the main window, and parses to a new XDocument
         /// </summary>
         /// <returns>XDocument</returns>
+
+        private string GetLatestFileVersion(FixtureTreeViewItem group)
+        {
+            bool resultIsAlpha = false;
+            string alpha = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+            int latestIntVersion = 0;
+            string latestStrVersion = "A";
+            foreach(FixtureTreeViewItem file in group.Items)
+            {
+                int intVersion;
+                string fileVersion = file.GetAutoIncrementVersion();
+                if(int.TryParse(fileVersion, out intVersion)) //If file version is int
+                {
+                    if(intVersion > latestIntVersion)
+                    {
+                        latestIntVersion = intVersion;
+                    }
+                }
+                else
+                {
+                    if(alpha.IndexOf(fileVersion) > alpha.IndexOf(latestStrVersion))
+                    {
+                        latestStrVersion = fileVersion;
+                        resultIsAlpha = true;
+                    }
+                }
+            }
+            if(resultIsAlpha)
+            {
+                return latestStrVersion;
+            }
+            return latestIntVersion.ToString();
+        }
+#nullable enable
+        private FixtureTreeViewItem? GetTreeViewItemParent(FixtureTreeViewItem item)
+        {
+            if(item == null) { return null; }
+            DependencyObject parent = item.Parent;
+            if (parent is FixtureTreeViewItem)
+            {
+                return parent as FixtureTreeViewItem; 
+            }
+            return null;
+        }
+#nullable disable
         private XDocument GetXmlFromEditor()
         {
             return XDocument.Parse(ConfigEditorTextBox.Text);
         }
 
+        private void MarkOldFileVersions(ref FixtureTreeViewItem group)
+        {
+            string latest = GetLatestFileVersion(group);
+            foreach(FixtureTreeViewItem file in group.Items)
+            {
+                if (!file.IsAutoVersionGreaterOrEqual(latest))
+                {
+                    file.Foreground = Brushes.Orange;
+                    file.ToolTip += "Consider archiving previous file version.\n";
+                }
+                else
+                {
+                    file.Foreground = Brushes.Black;
+                    file.ToolTip = null;
+                }
+            }
+        }
+
+        private List<FixtureTreeViewItem> GetLatestFilesInGroup(FixtureTreeViewItem group)
+        {
+            List<FixtureTreeViewItem> latestFiles = new List<FixtureTreeViewItem>();
+            string latest = GetLatestFileVersion(group);
+            foreach(FixtureTreeViewItem item in group.Items)
+            {
+                if(item.IsAutoVersionGreaterOrEqual(latest))
+                {
+                    latestFiles.Add(item);
+                }
+            }
+            return latestFiles;
+        }
+
         private void PopulateFixtureTree()
         {
+            string currentItemParent = FixtureTreeItemFolder();
             FixtureTreeView.Items.Clear();
             foreach (string fixtureConfig in Directory.GetFiles(config.PcuFixturesFolder))
             {
@@ -199,6 +304,7 @@ namespace PrcpConfigUtility
                                 subFolderHeader.Items.Add(fileItem);
                             }
                         }
+                        MarkOldFileVersions(ref subFolderHeader);
                         fixtureHeader.Items.Add(subFolderHeader);
                     }
                 }
@@ -218,9 +324,12 @@ namespace PrcpConfigUtility
                             fixtureHeader.Items.Add(fileItem);
                         }
                     }
+                    MarkOldFileVersions(ref fixtureHeader);
                 }
                 FixtureTreeView.Items.Add(fixtureHeader);
             }
+            if (currentItemParent != "") 
+            { ScrollToItem(currentItemParent); }
         }
 
         private void SaveEditorText()
@@ -229,26 +338,86 @@ namespace PrcpConfigUtility
             {
                 if(GetFileType(currentDocument) == "xml")
                 {
-                    if(FixtureTreeSelectedItem().Fixture.Autoincrement)
-                    {
-                        string fileName = Path.GetFileName(FixtureTreeItemPath());
-                    }
-                    Debug.WriteLine(FixtureTreeSelectedItem().IncrementVersion());
+                    FixtureTreeViewItem thisItem = FixtureTreeSelectedItem();
                     XDocument document = GetXmlFromEditor();
-                    document.Save(currentDocument);
+                    string incrementedPath = Path.Combine(Directory.GetParent(currentDocument).FullName, thisItem.IncrementVersion());
+                    if ((thisItem.Fixture.Autoincrement & currentDocumentChangesMade == true))
+                    { 
+                        switch(MessageBox.Show($"Incrementing file version from: {currentDocument}\nTo: {incrementedPath}\n\nConfirm?","Confirm Autoincrement",
+                            MessageBoxButton.YesNoCancel, MessageBoxImage.Information)) //Confirm the auto-increment
+                        {
+                            case (MessageBoxResult.Yes):
+                                break;
+                            case (MessageBoxResult.No):
+                                document.Save(currentDocument);
+                                break;
+                            case (MessageBoxResult.Cancel):
+                                return;
+                        }
+                        document.Save(incrementedPath);
+                        if(thisItem.Fixture.ArchivePreviousVersion)
+                        {
+                            ArchiveCurrentItem();
+                        }
+                        XDocument newXDoc = XDocument.Load(incrementedPath);
+                        DisplayXml(newXDoc);
+                        SetCurrentDocument(incrementedPath, newXDoc);
+                    }
+                    else
+                    {
+                        document.Save(currentDocument);
+                        SetCurrentDocument(currentDocument, document);
+                    }
                     currentDocumentChangesMade = false;
                 }
             }
         }
 
-        private void SetCurrentDocument(string document)
+        private void ScrollToItem(string targetItemParent)
+        {
+            foreach (FixtureTreeViewItem level1Item in FixtureTreeView.Items)
+            {
+                foreach (FixtureTreeViewItem level2Item in level1Item.Items)
+                {
+                    
+                    if (level2Item.Items.Count > 0)
+                    {
+                        foreach (FixtureTreeViewItem level3Item in level2Item.Items)
+                        {
+                            string currentItemParent = Directory.GetParent(level3Item.Path).FullName;
+                            if (currentItemParent == targetItemParent)
+                            {
+                                level1Item.IsExpanded = true;
+                                level2Item.IsExpanded = true;
+                                level2Item.IsSelected = true;
+                                level2Item.BringIntoView();
+                                return;
+                            };
+                        }
+                    }
+                    else
+                    {
+                        string currentItemParent = Directory.GetParent(level2Item.Path).FullName;
+                        if (currentItemParent == targetItemParent)
+                        {
+                            level1Item.IsExpanded = true;
+                            level1Item.IsSelected = true;
+                            level1Item.BringIntoView();
+                            return;
+                        };
+                    }
+                }
+            }
+        }
+
+        private void SetCurrentDocument(string document, XDocument xdoc)
         {
             if (File.Exists(document))
             {
                 currentDocument = document;
+                currentXDocument = xdoc;
                 CurrentFileTextBox.Text = document;
             }
         }
-
     }
 }

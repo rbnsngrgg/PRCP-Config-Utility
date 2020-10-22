@@ -55,10 +55,13 @@ namespace PrcpConfigUtility
                 string selectedPath = FixtureTreeItemPath();
                 if (GetFileType(selectedPath) == "xml")
                 {
-                    DisplayXml(XDocument.Load(selectedPath));
-                    SetCurrentDocument(selectedPath);
+                    XDocument xDocument = XDocument.Load(selectedPath);
+                    DisplayXml(xDocument);
+                    SetCurrentDocument(selectedPath, xDocument);
                 }
             }
+            //ForEachTreeItemVoid(WriteLineIfMatch);
+            GetTreeViewItemParent(FixtureTreeSelectedItem());
         }
 
         private void EditorSaveButton_Click(object sender, RoutedEventArgs e)

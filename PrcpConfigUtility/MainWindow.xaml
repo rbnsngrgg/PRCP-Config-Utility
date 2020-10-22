@@ -25,7 +25,7 @@
         <!--Fixure Tree-->
         <Grid Grid.Row="1" Grid.Column="0">
             <GroupBox Header="Fixtures">
-                <TreeView x:Name="FixtureTreeView" MouseDoubleClick="FixtureTreeView_MouseDoubleClick">
+                <TreeView x:Name="FixtureTreeView"  MouseDoubleClick="FixtureTreeView_MouseDoubleClick">
                     <TreeView.ContextMenu>
                         <ContextMenu x:Name="FixtureTreeContextMenu" Opened="FixtureTreeContextMenu_Opened">
                             <MenuItem x:Name="FixtureTreeOpenFolder" Header="Open Folder" Click="FixtureTreeOpenFolder_Click"/>

@@ -19,6 +19,7 @@ namespace PrcpConfigUtility
         public string FilePath { get; private set; }
         public string FixtureConfigsLocation { get; private set; }
         public string FixtureName { get; private set; }
+        public bool GroupByRegex { get; private set; }
         public bool SubFolders { get; private set; }
         public bool Success { get; private set; } = false;
 
@@ -61,6 +62,7 @@ namespace PrcpConfigUtility
                 newGrouping[attr.Name.LocalName] = attr.Value;
             }
             Grouping = newGrouping;
+            GroupByRegex = Grouping["GroupByRegex"].ToLower() == "true";
             Success = true;
         }
     }
