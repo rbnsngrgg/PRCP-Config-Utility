@@ -98,6 +98,7 @@ namespace PrcpConfigUtility
                 }
             }
         }
+
         private void WriteLineIfMatch(FixtureTreeViewItem item)
         {
             FixtureTreeViewItem currentItem = FixtureTreeSelectedItem();
