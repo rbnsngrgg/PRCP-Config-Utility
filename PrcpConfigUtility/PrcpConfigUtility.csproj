@@ -7,10 +7,12 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <None Remove="Images\reload.png" />
     <None Remove="Images\save.png" />
   </ItemGroup>
 
   <ItemGroup>
+    <Resource Include="Images\reload.png" />
     <Resource Include="Images\save.png" />
   </ItemGroup>
 

@@ -18,10 +18,14 @@
             <ColumnDefinition/>
         </Grid.ColumnDefinitions>
         <Grid.RowDefinitions>
-            <RowDefinition Height="20"/>
+            <RowDefinition Height="40"/>
             <RowDefinition/>
             <RowDefinition Height="50"/>
         </Grid.RowDefinitions>
+        <Button x:Name="RefreshButton" Grid.Row="0" Grid.Column="0" Width="30" Height="30"
+                VerticalAlignment="Center" HorizontalAlignment="Left" Margin="6,0,0,0" Click="RefreshButton_Click">
+            <Image Source="Images/reload.png"/>
+        </Button>
         <!--Fixure Tree-->
         <Grid Grid.Row="1" Grid.Column="0">
             <GroupBox Header="Fixtures">

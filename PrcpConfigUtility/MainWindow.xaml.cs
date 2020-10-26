@@ -52,6 +52,7 @@ namespace PrcpConfigUtility
             }
             if(FixtureTreeIsFileSelected())
             {
+                currentItem = FixtureTreeSelectedItem();
                 string selectedPath = FixtureTreeItemPath();
                 if (GetFileType(selectedPath) == "xml")
                 {
@@ -82,7 +83,7 @@ namespace PrcpConfigUtility
 
         private void FixtureTreeArchiveFile_Click(object sender, RoutedEventArgs e)
         {
-            ArchiveCurrentItem();
+            ArchiveCurrentItem(true);
         }
 
         private void FixtureTreeContextMenu_Opened(object sender, RoutedEventArgs e)
@@ -95,6 +96,11 @@ namespace PrcpConfigUtility
             {
                 FixtureTreeArchiveFile.IsEnabled = false;
             }
+        }
+
+        private void RefreshButton_Click(object sender, RoutedEventArgs e)
+        {
+            PopulateFixtureTree();
         }
     }
 }

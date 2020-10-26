@@ -20,17 +20,29 @@ namespace PrcpConfigUtility
         private string currentDocument = ""; //For keeping track of which document is displayed in the editor.
         private XDocument currentXDocument;
         private bool currentDocumentChangesMade = false;
+        private FixtureTreeViewItem currentItem;
 
-
-        private void ArchiveCurrentItem()
+        private void ArchiveCurrentItem(bool newSelection = false)
         {
-            string archiveFolder = Path.Combine(FixtureTreeItemFolder(), "archive");
-            string currentItemPath = FixtureTreeItemPath();
+            FixtureTreeViewItem item;
+            if (newSelection)
+            {
+                if (FixtureTreeIsFileSelected())
+                { item = FixtureTreeSelectedItem(); }
+                else { return; }
+            }
+            else
+            { 
+                if (currentItem == null) 
+                { return; }
+                item = currentItem;
+            }
+            string archiveFolder = Path.Combine(Directory.GetParent(item.Path).FullName, "archive");
             if (!Directory.Exists(archiveFolder))
             { Directory.CreateDirectory(archiveFolder); }
-            string newPath = Path.Combine(archiveFolder, Path.GetFileName(currentItemPath));
-            File.Move(currentItemPath, newPath, true);
-            PopulateFixtureTree();
+            string newPath = Path.Combine(archiveFolder, Path.GetFileName(item.Path));
+            File.Move(item.Path, newPath, true);
+            PopulateFixtureTree(newSelection);
         }
 
         private void DisplayXml(XDocument document)
@@ -52,23 +64,22 @@ namespace PrcpConfigUtility
 
         private string FixtureTreeItemPath() //Empty string if no file selected.
         {
-            if (FixtureTreeIsFileSelected())
+            if(currentItem != null)
             {
-                return ((FixtureTreeViewItem)FixtureTreeView.SelectedItem).Path;
+                return currentItem.Path;
             }
             return "";
         }
 
         private string FixtureTreeItemFolder() //Path of the selected folder, or the folder containing selected file
         {
-            if(FixtureTreeView.SelectedItem != null)
+            if(currentItem != null)
             {
-                FixtureTreeViewItem fixtureItem = FixtureTreeView.SelectedItem as FixtureTreeViewItem;
-                if(Directory.Exists(fixtureItem.Path))
+                if(Directory.Exists(currentItem.Path))
                 {
-                    return fixtureItem.Path;
+                    return currentItem.Path;
                 }
-                return Directory.GetParent(fixtureItem.Path).FullName;
+                return Directory.GetParent(currentItem.Path).FullName;
             }
             return "";
         }
@@ -229,12 +240,17 @@ namespace PrcpConfigUtility
             }
             return null;
         }
-#nullable disable
-        private XDocument GetXmlFromEditor()
+        private XDocument? GetXmlFromEditor()
         {
-            return XDocument.Parse(ConfigEditorTextBox.Text);
+            try
+            { return XDocument.Parse(ConfigEditorTextBox.Text); }
+            catch(System.Xml.XmlException ex)
+            {
+                MessageBox.Show($"{ex.Message}", "Xml Exception", MessageBoxButton.OK, MessageBoxImage.Error);
+                return null;
+            }
         }
-
+#nullable disable
         private void MarkOldFileVersions(ref FixtureTreeViewItem group)
         {
             string latest = GetLatestFileVersion(group);
@@ -267,9 +283,12 @@ namespace PrcpConfigUtility
             return latestFiles;
         }
 
-        private void PopulateFixtureTree()
+        private void PopulateFixtureTree(bool selectionOverride = false)
         {
-            string currentItemParent = FixtureTreeItemFolder();
+            string currentItemParent = "";
+            if (selectionOverride)
+            { currentItemParent = Directory.GetParent(FixtureTreeSelectedItem().Path).FullName; }
+            else { currentItemParent = FixtureTreeItemFolder(); }
             FixtureTreeView.Items.Clear();
             foreach (string fixtureConfig in Directory.GetFiles(config.PcuFixturesFolder))
             {
@@ -339,8 +358,10 @@ namespace PrcpConfigUtility
             {
                 if(GetFileType(currentDocument) == "xml")
                 {
-                    FixtureTreeViewItem thisItem = FixtureTreeSelectedItem();
+                    //FixtureTreeViewItem thisItem = FixtureTreeSelectedItem();
+                    FixtureTreeViewItem thisItem = currentItem;
                     XDocument document = GetXmlFromEditor();
+                    if (document == null) { return; }
                     string incrementedPath = Path.Combine(Directory.GetParent(currentDocument).FullName, thisItem.IncrementVersion());
                     if ((thisItem.Fixture.Autoincrement & currentDocumentChangesMade == true))
                     { 
@@ -348,6 +369,14 @@ namespace PrcpConfigUtility
                             MessageBoxButton.YesNoCancel, MessageBoxImage.Information)) //Confirm the auto-increment
                         {
                             case (MessageBoxResult.Yes):
+                                document.Save(incrementedPath);
+                                if (thisItem.Fixture.ArchivePreviousVersion)
+                                {
+                                    ArchiveCurrentItem();
+                                }
+                                XDocument newXDoc = XDocument.Load(incrementedPath);
+                                DisplayXml(newXDoc);
+                                SetCurrentDocument(incrementedPath, newXDoc);
                                 break;
                             case (MessageBoxResult.No):
                                 document.Save(currentDocument);
@@ -355,14 +384,6 @@ namespace PrcpConfigUtility
                             case (MessageBoxResult.Cancel):
                                 return;
                         }
-                        document.Save(incrementedPath);
-                        if(thisItem.Fixture.ArchivePreviousVersion)
-                        {
-                            ArchiveCurrentItem();
-                        }
-                        XDocument newXDoc = XDocument.Load(incrementedPath);
-                        DisplayXml(newXDoc);
-                        SetCurrentDocument(incrementedPath, newXDoc);
                     }
                     else
                     {
@@ -415,6 +436,7 @@ namespace PrcpConfigUtility
         {
             if (File.Exists(document))
             {
+                currentItem = FixtureTreeSelectedItem();
                 currentDocument = document;
                 currentXDocument = xdoc;
                 CurrentFileTextBox.Text = document;
