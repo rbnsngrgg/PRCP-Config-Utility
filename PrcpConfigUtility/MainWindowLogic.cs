@@ -73,13 +73,14 @@ namespace PrcpConfigUtility
 
         private string FixtureTreeItemFolder() //Path of the selected folder, or the folder containing selected file
         {
-            if(currentItem != null)
+            FixtureTreeViewItem selectedItem = FixtureTreeSelectedItem();
+            if (selectedItem != null)
             {
-                if(Directory.Exists(currentItem.Path))
+                if(Directory.Exists(selectedItem.Path))
                 {
-                    return currentItem.Path;
+                    return selectedItem.Path;
                 }
-                return Directory.GetParent(currentItem.Path).FullName;
+                return Directory.GetParent(selectedItem.Path).FullName;
             }
             return "";
         }
