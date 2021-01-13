@@ -51,6 +51,28 @@ namespace PrcpConfigUtility
             currentDocumentChangesMade = false;
         }
 
+        private void FixtureTreeCopy()
+        {
+            if(FixtureTreeIsFileSelected())
+            {
+                FixtureTreeViewItem current = FixtureTreeSelectedItem();
+                CopyFileDialog copyDialog = new CopyFileDialog();
+                copyDialog.currentItem = current;
+                copyDialog.CopyFileTextBox.Text = Path.Join(
+                    Directory.GetParent(current.Path).FullName,
+                    $"{Path.GetFileNameWithoutExtension(current.Path)}-Copy{Path.GetExtension(current.Path)}");
+                if(copyDialog.ShowDialog() == true)
+                {
+                    if (!File.Exists(copyDialog.CopyFileTextBox.Text))
+                    {
+                        if (Directory.GetParent(copyDialog.CopyFileTextBox.Text).Exists)
+                        { File.Copy(current.Path, copyDialog.CopyFileTextBox.Text); }
+                    }
+                    PopulateFixtureTree();
+                }
+            }
+        }
+
         private bool FixtureTreeIsFileSelected() //True if selected item is a config file
         {
             if (FixtureTreeView.SelectedItem != null)
@@ -260,7 +282,9 @@ namespace PrcpConfigUtility
                 if (!file.IsAutoVersionGreaterOrEqual(latest))
                 {
                     file.Foreground = Brushes.Orange;
-                    file.ToolTip += "Consider archiving previous file version.\n";
+                    file.ToolTip = "Consider archiving previous file version.\n";
+                    group.Foreground = Brushes.Orange;
+                    group.ToolTip = "Consider archiving previous file version.\n";
                 }
                 else
                 {

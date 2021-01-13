@@ -5,7 +5,8 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:PrcpConfigUtility"
         mc:Ignorable="d"
-        Title="PRCP Config Manager" Height="800" Width="1200" MinHeight="600" MinWidth="800">
+        Title="PRCP Config Manager" Height="800" Width="1200" MinHeight="600" MinWidth="800"
+        Icon="C:\Users\grobinson\source\repos\PRCP-Config-Utility\PrcpConfigUtility\Images\settingsEdit.ico">
     <Window.Resources>
         <Style TargetType="Image">
             <Setter Property="RenderOptions.BitmapScalingMode" Value="HighQuality"/>
@@ -34,6 +35,7 @@
                         <ContextMenu x:Name="FixtureTreeContextMenu" Opened="FixtureTreeContextMenu_Opened">
                             <MenuItem x:Name="FixtureTreeOpenFolder" Header="Open Folder" Click="FixtureTreeOpenFolder_Click"/>
                             <MenuItem x:Name="FixtureTreeArchiveFile" Header="Archive File" Click="FixtureTreeArchiveFile_Click"/>
+                            <MenuItem x:Name="FixtureTreeCopyFile" Header="Copy File" Click="FixtureTreeCopyFile_Click"/>
                         </ContextMenu>
                     </TreeView.ContextMenu>
                 </TreeView>

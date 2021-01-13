@@ -1,1 +1,2 @@
-﻿Floppy-disk, reload Icons by: https://www.flaticon.com/authors/freepik from https://www.flaticon.com/
+﻿"Floppy-disk", "reload" icons by: https://www.flaticon.com/authors/freepik from https://www.flaticon.com/
+"Settings" icon made by: https://www.flaticon.com/authors/prosymbols from https://www.flaticon.com/

@@ -9,7 +9,7 @@ using System.Xml.Linq;
 
 namespace PrcpConfigUtility
 {
-    class PcuFixture
+    public class PcuFixture
     {
         public bool ArchivePreviousVersion { get; private set; }
         public bool Autoincrement { get; private set; }

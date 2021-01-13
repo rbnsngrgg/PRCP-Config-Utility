@@ -91,16 +91,23 @@ namespace PrcpConfigUtility
             if(FixtureTreeIsFileSelected())
             {
                 FixtureTreeArchiveFile.IsEnabled = true;
+                FixtureTreeCopyFile.IsEnabled = true;
             }
             else
             {
                 FixtureTreeArchiveFile.IsEnabled = false;
+                FixtureTreeCopyFile.IsEnabled = false;
             }
         }
 
         private void RefreshButton_Click(object sender, RoutedEventArgs e)
         {
             PopulateFixtureTree();
+        }
+
+        private void FixtureTreeCopyFile_Click(object sender, RoutedEventArgs e)
+        {
+            FixtureTreeCopy();
         }
     }
 }

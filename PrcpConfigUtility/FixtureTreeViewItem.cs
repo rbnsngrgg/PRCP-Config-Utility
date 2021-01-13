@@ -10,7 +10,7 @@ using System.Windows.Navigation;
 
 namespace PrcpConfigUtility
 {
-    class FixtureTreeViewItem : TreeViewItem
+    public class FixtureTreeViewItem : TreeViewItem
     {
         private readonly string alpha = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
         public string Path {get;set;}
