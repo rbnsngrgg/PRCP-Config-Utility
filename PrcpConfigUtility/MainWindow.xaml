@@ -30,15 +30,28 @@
         <!--Fixure Tree-->
         <Grid Grid.Row="1" Grid.Column="0">
             <GroupBox Header="Fixtures">
-                <TreeView x:Name="FixtureTreeView"  MouseDoubleClick="FixtureTreeView_MouseDoubleClick">
+                <local:MultiSelectTreeView x:Name="FixtureTreeView"  MouseDoubleClick="FixtureTreeView_MouseDoubleClick" MouseLeftButtonUp="FixtureTreeViewItem_MouseLeftButtonUp">
+                    <local:FixtureTreeViewItem/>
+                    <TreeView.Resources>
+                        <Style TargetType="local:FixtureTreeViewItem">
+                            <Style.Triggers>
+                                <DataTrigger Binding="{Binding IsSelected}" Value="True">
+                                    <DataTrigger.Setters>
+                                        <Setter Property="Background" Value="Red"/>
+                                    </DataTrigger.Setters>
+                                </DataTrigger>
+                            </Style.Triggers>
+                        </Style>
+                    </TreeView.Resources>
                     <TreeView.ContextMenu>
                         <ContextMenu x:Name="FixtureTreeContextMenu" Opened="FixtureTreeContextMenu_Opened">
                             <MenuItem x:Name="FixtureTreeOpenFolder" Header="Open Folder" Click="FixtureTreeOpenFolder_Click"/>
                             <MenuItem x:Name="FixtureTreeArchiveFile" Header="Archive File" Click="FixtureTreeArchiveFile_Click"/>
                             <MenuItem x:Name="FixtureTreeCopyFile" Header="Copy File" Click="FixtureTreeCopyFile_Click"/>
+                            <!--<MenuItem x:Name="FixtureTreeIncrementRev" Header="Increment Revision" Click="FixtureTreeIncrementRev_Click"/>-->
                         </ContextMenu>
                     </TreeView.ContextMenu>
-                </TreeView>
+                </local:MultiSelectTreeView>
             </GroupBox>
         </Grid>
         <!--Config editing area-->

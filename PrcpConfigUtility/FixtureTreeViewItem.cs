@@ -1,4 +1,5 @@
 ﻿using System;
+using System.ComponentModel;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
@@ -6,17 +7,74 @@ using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Windows.Controls;
+using System.Windows.Media;
 using System.Windows.Navigation;
 
 namespace PrcpConfigUtility
 {
     public class FixtureTreeViewItem : TreeViewItem
     {
+        public event PropertyChangedEventHandler PropertyChanged;
         private readonly string alpha = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+        private bool isSelected;
+
+        public new bool IsSelected
+        {
+            get => isSelected;
+            set
+            {
+                isSelected = value;
+                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(IsSelected)));
+                if(isSelected)
+                {
+                    Background = Brushes.LightBlue;
+                }
+                else
+                {
+                    Background = Brushes.Transparent;
+                }
+            }
+        }
         public string Path {get;set;}
         public PcuFixture Fixture { get; set; }
+
+        public void DeselectChildren()
+        {
+            foreach(FixtureTreeViewItem item in Items)
+            {
+                item.IsSelected = false;
+                item.DeselectChildren();
+            }
+        }
+        public int GetChildrenSelectedCount()
+        {
+            int selected = 0;
+            foreach(FixtureTreeViewItem child in Items)
+            {
+                if(child.IsSelected)
+                {
+                    selected += 1;
+                }
+                selected += child.GetChildrenSelectedCount();
+            }
+            return selected;
+        }
+        public List<FixtureTreeViewItem> GetChildrenSelectedList()
+        {
+            List<FixtureTreeViewItem> selected = new List<FixtureTreeViewItem>();
+            foreach (FixtureTreeViewItem child in Items)
+            {
+                if (child.IsSelected)
+                {
+                    selected.Add(child);
+                }
+                selected.AddRange(child.GetChildrenSelectedList());
+            }
+            return selected;
+        }
         public string GetAutoIncrementVersion()
         {
+            if(!Fixture.Autoincrement) { return ""; }
             string match = "";
             string fileName = System.IO.Path.GetFileName(Path);
             foreach(Match regexMatch in Regex.Matches(fileName, Fixture.FileNameSections[Fixture.Grouping["IncrementBy"]]))
@@ -45,6 +103,7 @@ namespace PrcpConfigUtility
         }
         public string IncrementVersion() //return file name with new version
         {
+            if (!File.Exists(Path)) { return ""; }
             string version = GetAutoIncrementVersion();
             string fileName = System.IO.Path.GetFileName(Path);
             string newFileName = "";

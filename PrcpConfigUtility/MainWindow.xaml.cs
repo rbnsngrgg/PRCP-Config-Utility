@@ -31,6 +31,7 @@ namespace PrcpConfigUtility
         {
             InitializeComponent();
             PopulateFixtureTree();
+            Title = $"PRCP Config Manager {version}";
         }
 
         private void FixtureTreeView_MouseDoubleClick(object sender, MouseButtonEventArgs e) //Open selected xml in the editor
@@ -108,6 +109,43 @@ namespace PrcpConfigUtility
         private void FixtureTreeCopyFile_Click(object sender, RoutedEventArgs e)
         {
             FixtureTreeCopy();
+        }
+
+        private void FixtureTreeViewItem_MouseLeftButtonUp(object sender, MouseButtonEventArgs e)
+        {
+            MultiSelectTreeView senderTreeView = sender as MultiSelectTreeView;
+            if (Keyboard.IsKeyDown(Key.LeftCtrl) | Keyboard.IsKeyDown(Key.RightCtrl))
+            {
+                if(((FixtureTreeViewItem)FixtureTreeView.SelectedItem).IsSelected)
+                {
+                    ((FixtureTreeViewItem)FixtureTreeView.SelectedItem).IsSelected = false;
+                }
+                else { ((FixtureTreeViewItem)FixtureTreeView.SelectedItem).IsSelected = true; }
+            }
+            else
+            { 
+                foreach(FixtureTreeViewItem item in FixtureTreeView.Items)
+                {
+                    item.IsSelected = false;
+                    item.DeselectChildren();
+                }
+                ((FixtureTreeViewItem)FixtureTreeView.SelectedItem).IsSelected = true;
+            }
+            int selectedItems = 0;
+            foreach (FixtureTreeViewItem item in FixtureTreeView.Items)
+            {
+                if(item.IsSelected)
+                {
+                    selectedItems += 1;
+                }
+                selectedItems += item.GetChildrenSelectedCount();
+            }
+        }
+
+        private void FixtureTreeIncrementRev_Click(object sender, RoutedEventArgs e)
+        {
+            Debug.WriteLine(((FixtureTreeViewItem)FixtureTreeView.SelectedItem).Header);
+            Debug.WriteLine(((FixtureTreeViewItem)FixtureTreeView.SelectedItem).IncrementVersion());
         }
     }
 }

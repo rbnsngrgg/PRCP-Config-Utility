@@ -17,6 +17,7 @@ namespace PrcpConfigUtility
     /// </summary>
     public partial class MainWindow : Window
     {
+        private readonly string version = "0.1.0-alpha";
         private string currentDocument = ""; //For keeping track of which document is displayed in the editor.
         private XDocument currentXDocument;
         private bool currentDocumentChangesMade = false;
@@ -24,24 +25,36 @@ namespace PrcpConfigUtility
 
         private void ArchiveCurrentItem(bool newSelection = false)
         {
-            FixtureTreeViewItem item;
+            List<FixtureTreeViewItem> items = new List<FixtureTreeViewItem>();
             if (newSelection)
             {
-                if (FixtureTreeIsFileSelected())
-                { item = FixtureTreeSelectedItem(); }
-                else { return; }
+                //if (FixtureTreeIsFileSelected())
+                //{ items.Add(FixtureTreeSelectedItem()); }
+                //else { return; }
+                foreach(FixtureTreeViewItem child in FixtureTreeView.Items)
+                {
+                    if(child.IsSelected)
+                    {
+                        items.Add(child);
+                    }
+                    items.AddRange(child.GetChildrenSelectedList());
+                }
             }
             else
             { 
                 if (currentItem == null) 
                 { return; }
-                item = currentItem;
+                items.Add(currentItem);
             }
-            string archiveFolder = Path.Combine(Directory.GetParent(item.Path).FullName, "archive");
-            if (!Directory.Exists(archiveFolder))
-            { Directory.CreateDirectory(archiveFolder); }
-            string newPath = Path.Combine(archiveFolder, Path.GetFileName(item.Path));
-            File.Move(item.Path, newPath, true);
+            foreach (FixtureTreeViewItem item in items)
+            {
+                if (!File.Exists(item.Path)) { continue; }
+                string archiveFolder = Path.Combine(Directory.GetParent(item.Path).FullName, "archive");
+                if (!Directory.Exists(archiveFolder))
+                { Directory.CreateDirectory(archiveFolder); }
+                string newPath = Path.Combine(archiveFolder, Path.GetFileName(item.Path));
+                File.Move(item.Path, newPath, true);
+            }
             PopulateFixtureTree(newSelection);
         }
 
@@ -276,6 +289,7 @@ namespace PrcpConfigUtility
 #nullable disable
         private void MarkOldFileVersions(ref FixtureTreeViewItem group)
         {
+            if (!group.Fixture.Autoincrement) { return; }
             string latest = GetLatestFileVersion(group);
             foreach(FixtureTreeViewItem file in group.Items)
             {
@@ -358,7 +372,7 @@ namespace PrcpConfigUtility
                     foreach (string file in Directory.GetFiles(fixture.FixtureConfigsLocation))
                     {
                         string fileName = System.IO.Path.GetFileName(file);
-                        if (Regex.IsMatch(file, fixture.ConfigRegex))
+                        if (Regex.IsMatch(fileName, fixture.ConfigRegex))
                         {
                             FixtureTreeViewItem fileItem = new FixtureTreeViewItem //Second level TreeViewItem
                             {
