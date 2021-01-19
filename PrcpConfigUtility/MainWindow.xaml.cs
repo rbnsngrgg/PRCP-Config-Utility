@@ -1,23 +1,8 @@
-﻿using System;
-using System.Diagnostics;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.Diagnostics;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
 using System.Windows.Input;
-using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Navigation;
-using System.Windows.Shapes;
-using System.Xml;
 using System.Xml.Linq;
-using System.Printing;
-using System.Text.RegularExpressions;
-using System.IO;
 
 namespace PrcpConfigUtility
 {
@@ -113,6 +98,7 @@ namespace PrcpConfigUtility
 
         private void FixtureTreeViewItem_MouseLeftButtonUp(object sender, MouseButtonEventArgs e)
         {
+            if(FixtureTreeView.SelectedItem == null) { return; }
             MultiSelectTreeView senderTreeView = sender as MultiSelectTreeView;
             if (Keyboard.IsKeyDown(Key.LeftCtrl) | Keyboard.IsKeyDown(Key.RightCtrl))
             {

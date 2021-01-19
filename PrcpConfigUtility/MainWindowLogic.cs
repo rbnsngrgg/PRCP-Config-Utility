@@ -1,14 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Text;
-using System.Text.RegularExpressions;
-using System.Windows;
-using System.Xml.Linq;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
-using System.Diagnostics;
+using System.Text.RegularExpressions;
+using System.Windows;
 using System.Windows.Media;
-using System.Windows.Controls;
+using System.Xml.Linq;
 
 namespace PrcpConfigUtility
 {
@@ -182,7 +180,7 @@ namespace PrcpConfigUtility
             if (!File.Exists(selectedItem.Path)) { return groupItems; }
             foreach(FixtureTreeViewItem listItem1 in FixtureTreeView.Items) //Foreach fixture
             {
-                if (!selectedItem.Fixture.Grouping["GroupWithFixtures"].Contains((string)listItem1.Header)) //Check fixture grouping
+                if (selectedItem.Fixture.Grouping["GroupName"] != listItem1.Fixture.Grouping["GroupName"]) //Check fixture grouping
                 { continue; }
                 foreach(FixtureTreeViewItem listItem2 in listItem1.Items) //Foreach subfolder or file
                 {
@@ -401,10 +399,10 @@ namespace PrcpConfigUtility
                     FixtureTreeViewItem thisItem = currentItem;
                     XDocument document = GetXmlFromEditor();
                     if (document == null) { return; }
-                    string incrementedPath = Path.Combine(Directory.GetParent(currentDocument).FullName, thisItem.IncrementVersion());
                     if ((thisItem.Fixture.Autoincrement & currentDocumentChangesMade == true))
-                    { 
-                        switch(MessageBox.Show($"Incrementing file version from: {currentDocument}\nTo: {incrementedPath}\n\nConfirm?","Confirm Autoincrement",
+                    {
+                        string incrementedPath = Path.Combine(Directory.GetParent(currentDocument).FullName, thisItem.IncrementVersion());
+                        switch (MessageBox.Show($"Incrementing file version from: {currentDocument}\nTo: {incrementedPath}\n\nConfirm?","Confirm Autoincrement",
                             MessageBoxButton.YesNoCancel, MessageBoxImage.Information)) //Confirm the auto-increment
                         {
                             case (MessageBoxResult.Yes):
@@ -426,6 +424,13 @@ namespace PrcpConfigUtility
                     }
                     else
                     {
+                        if(currentItem.Fixture.ArchivePreviousVersion)
+                        {
+                            string archivePath = Path.Join(Directory.GetParent(currentItem.Path).FullName, "archive");
+                            string archiveFileName = $"{Path.GetFileNameWithoutExtension(currentItem.Path)}_{DateTime.UtcNow.ToString("yyyy-MM-dd-HH-mm-ss")}.{Path.GetExtension(currentItem.Path)}";
+                            if (!Directory.Exists(archivePath)) { Directory.CreateDirectory(archivePath); }
+                            File.Copy(currentItem.Path, Path.Join(archivePath,archiveFileName));
+                        }
                         document.Save(currentDocument);
                         SetCurrentDocument(currentDocument, document);
                     }
