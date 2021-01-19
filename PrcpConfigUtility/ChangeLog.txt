@@ -1,0 +1,7 @@
+﻿--0.1.0-Alpha
+	--Initial alpha release
+	--Functions for identifying configuration files based on RegEx specified in PCUConfig and (by default) PcuFixtures folder configs.
+		--See Pre-packaged configs for examples.
+	--Multi-select for archiving multiple items.
+	--Auto-increment versions of files specified in the configs.
+	--Auto-archive/backup feature for files are that edited in the app.
