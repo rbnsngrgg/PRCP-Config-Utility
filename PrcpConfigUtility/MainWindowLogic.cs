@@ -15,7 +15,7 @@ namespace PrcpConfigUtility
     /// </summary>
     public partial class MainWindow : Window
     {
-        private readonly string version = "0.1.0-alpha";
+        private readonly string version = "0.1.1-alpha";
         private string currentDocument = ""; //For keeping track of which document is displayed in the editor.
         private XDocument currentXDocument;
         private bool currentDocumentChangesMade = false;

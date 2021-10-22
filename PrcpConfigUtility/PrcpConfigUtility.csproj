@@ -2,11 +2,12 @@
 
   <PropertyGroup>
     <OutputType>WinExe</OutputType>
-    <TargetFramework>netcoreapp3.1</TargetFramework>
+    <TargetFramework>net5.0-windows</TargetFramework>
     <UseWPF>true</UseWPF>
-    <Version>0.1.0-alpha</Version>
+    <Version>0.1.1-alpha</Version>
     <AssemblyName>PrcpConfigManager</AssemblyName>
     <ApplicationIcon>settingsEdit.ico</ApplicationIcon>
+    <AssemblyVersion>0.1.1.0</AssemblyVersion>
   </PropertyGroup>
 
   <ItemGroup>
