@@ -8,6 +8,10 @@
     <AssemblyName>PrcpConfigManager</AssemblyName>
     <ApplicationIcon>settingsEdit.ico</ApplicationIcon>
     <AssemblyVersion>0.1.1.0</AssemblyVersion>
+    <PublishSingleFile>true</PublishSingleFile>
+    <SelfContained>false</SelfContained>
+    <RuntimeIdentifier>win-x64</RuntimeIdentifier>
+    <Platforms>AnyCPU;x64;x86</Platforms>
   </PropertyGroup>
 
   <ItemGroup>
