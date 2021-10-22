@@ -1,4 +1,7 @@
-﻿--0.1.0-Alpha
+﻿--0.1.1-Alpha
+	--.NET 5 Framework-dependent, Portable.
+
+--0.1.0-Alpha
 	--Initial alpha release
 	--Functions for identifying configuration files based on RegEx specified in PCUConfig and (by default) PcuFixtures folder configs.
 		--See Pre-packaged configs for examples.
